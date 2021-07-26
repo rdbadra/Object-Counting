@@ -6,17 +6,20 @@ import pickle
 
 IMAGE_DIR = '/home/roberto/Descargas/ImagenesMicroplasticos/'
 
+OUTPUT_FOLDER = 'images_clicks'
+
 all_files = []
 for (dirpath, dirnames, filenames) in walk(f'{IMAGE_DIR}original'):
     all_files.extend(filenames)
     break
 
 resized_images = []
-for (dirpath, dirnames, filenames) in walk(f'{IMAGE_DIR}images'):
+for (dirpath, dirnames, filenames) in walk(f'{IMAGE_DIR}{OUTPUT_FOLDER}'):
     resized_images.extend(filenames)
     break
+print(resized_images)
 
-pngs = [file.split('_dots.png')[0].lower() for file in resized_images if '_dots.png' in file]
+pngs = [file.split('_file_clicks')[0].lower() for file in resized_images if '_file_clicks' in file]
 
 files = []
 for file in all_files:
@@ -41,7 +44,8 @@ def mouse_callback(event, x, y, flags, params):
         global file_clicks
         global img
         global output
-        file_clicks.append([int(x * (224 / img.shape[1])), int(y * (224 / img.shape[0]))])
+        file_clicks.append([x, y])
+        #file_clicks.append([int(x * (224 / img.shape[1])), int(y * (224 / img.shape[0]))])
         #store the coordinates of the right-click event
         output = cv2.circle(output, (int(x * (224 / img.shape[1])), int(y * (224 / img.shape[0]))), radius=0, color=(0, 0, 255), thickness=1)
 
@@ -56,7 +60,8 @@ def mouse_callback(event, x, y, flags, params):
 def write_file(image_name, output):
     global file_clicks
     output = cv2.resize(output, (224, 224), interpolation=cv2.INTER_AREA)
-    cv2.imwrite(f'{IMAGE_DIR}images/{image_name.split(".")[0]}_dots.png', output)
+    # cv2.imwrite(f'{IMAGE_DIR}{OUTPUT_FOLDER}/{image_name.split(".")[0]}_dots.png', output)
+    pickle.dump(file_clicks, open(f'{IMAGE_DIR}{OUTPUT_FOLDER}/{image_name.split(".")[0]}_file_clicks', "wb" ) )
     '''
     with open(f'{IMAGE_DIR}{image_name.split(".")[0]}.txt', 'w') as file:
         file.write(f'X;Y\n')
@@ -88,9 +93,11 @@ for image_name in files:
     # Press Enter
     if(k == 13):
         write_file(image_name, output)
+        '''
         img = cv2.imread(path_image)
         output = cv2.resize(img, (224, 224), interpolation=cv2.INTER_AREA)
-        cv2.imwrite(f'{IMAGE_DIR}images/{image_name.split(".")[0]}.jpg', output)
+        cv2.imwrite(f'{IMAGE_DIR}{OUTPUT_FOLDER}/{image_name.split(".")[0]}.jpg', output)
+        '''
     #cv2.waitKey(0)
     # Press Space
     if (k == 32):
